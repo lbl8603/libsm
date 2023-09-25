@@ -106,7 +106,7 @@ fn t_prime_trans(input: u32) -> u32 {
 
 pub struct Sm4Cipher {
     // round key
-    rk: Vec<u32>,
+    rk: [u32; 32],
 }
 
 static FK: [u32; 4] = [0xa3b1_bac6, 0x56aa_3350, 0x677d_9197, 0xb270_22dc];
@@ -149,7 +149,7 @@ static CK: [u32; 32] = [
 impl Sm4Cipher {
     pub fn new(key: &[u8]) -> Result<Sm4Cipher, Sm4Error> {
         let mut k: [u32; 4] = split_block(key)?;
-        let mut cipher = Sm4Cipher { rk: Vec::new() };
+        let mut cipher = Sm4Cipher { rk: [0; 32] };
         for i in 0..4 {
             k[i] ^= FK[i];
         }
@@ -158,10 +158,10 @@ impl Sm4Cipher {
             k[1] ^= t_prime_trans(k[2] ^ k[3] ^ k[0] ^ CK[i * 4 + 1]);
             k[2] ^= t_prime_trans(k[3] ^ k[0] ^ k[1] ^ CK[i * 4 + 2]);
             k[3] ^= t_prime_trans(k[0] ^ k[1] ^ k[2] ^ CK[i * 4 + 3]);
-            cipher.rk.push(k[0]);
-            cipher.rk.push(k[1]);
-            cipher.rk.push(k[2]);
-            cipher.rk.push(k[3]);
+            cipher.rk[i * 4] = k[0];
+            cipher.rk[i * 4 + 1] = k[1];
+            cipher.rk[i * 4 + 2] = k[2];
+            cipher.rk[i * 4 + 3] = k[3];
         }
 
         Ok(cipher)
